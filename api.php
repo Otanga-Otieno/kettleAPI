@@ -21,6 +21,7 @@ if (preg_match("/^\\/api.php\\/inventory[\\/[0-9]*]?$/", $uri)) {
     
 } else if ($uri == "/api.php/wiki") {
     header('Content-Type: text/html; charset=utf-8');
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
     echo nl2br("<h3>/api.php/inventory</h3>");
     echo nl2br("Return all inventory items (stock_id, description, price)");
 
