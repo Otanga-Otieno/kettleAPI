@@ -15,8 +15,19 @@ if (preg_match("/^\\/api.php\\/inventory[\\/[0-9]*]?$/", $uri)) {
     } else {
         $arr = json_encode(inventory($id));
     }
+
+    header('Content-Type: application/json; charset=utf-8');
+    echo($arr);
     
+} else if ($uri == "/wiki") {
+    header('Content-Type: application/json; charset=utf-8');
+    echo nl2br("<h3>/api.php/inventory</h3>");
+    echo nl2br("Return all inventory items (stock_id, description, price)");
+
+    echo nl2br("\n\n");
+
+    echo nl2br("<h3>/api.php/inventory/{stock_id}</h3>");
+    echo nl2br("Return stock item details (description, price)");
 }
 
-header('Content-Type: application/json; charset=utf-8');
-echo($arr);
+
