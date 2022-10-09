@@ -34,14 +34,13 @@ function inventory($id) {
     $id = preg_replace("/\\//", "", $id);
     global $conn, $stock_master, $stock_moves;
 
-    $stmt = $conn->prepare("SELECT SUM($stock_moves.qty) AS quantity, $stock_master.description, $stock_master.material_cost FROM $stock_master INNER JOIN $stock_moves ON $stock_moves.stock_id=$stock_master.stock_id WHERE $stock_master.stock_id = ? AND $stock_master.stock_id=$stock_moves.stock_id GROUP BY $stock_master.stock_id");
+    $stmt = $conn->prepare("SELECT $stock_master.description, $stock_master.material_cost FROM $stock_master WHERE $stock_master.stock_id = ? ");
     $stmt->bind_param("s", $id);
     $stmt->execute();
-    $stmt->bind_result($qty, $des, $cost);
+    $stmt->bind_result($des, $cost);
     $stock = array();
     while ($stmt->fetch()) {
         $stock['description'] = $des;
-        $stock['quantity'] = $qty;
         $stock['price'] = $cost;
     }
     return $stock;

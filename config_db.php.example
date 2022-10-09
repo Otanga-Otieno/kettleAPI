@@ -32,6 +32,6 @@ $db_connections = array (
     'collation' => 'utf8_xx',
     'tbpref' => '0_',
     'dbuser' => 'root',
-    'dbpassword' => 'x',
+    'dbpassword' => '',
   ),
 );
