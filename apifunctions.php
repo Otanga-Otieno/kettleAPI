@@ -23,7 +23,6 @@ function inventory_all() {
         $stock = array();
         $stock['stock_id'] = $id;
         $stock['description'] = $des;
-        //$stock['quantity'] = $qty;
         $stock['price'] = $cost;
         array_push($arr, $stock);
     }
@@ -43,5 +42,23 @@ function inventory($id) {
         $stock['description'] = $des;
         $stock['price'] = $cost;
     }
+    $stmt->close();
+    if ($stock) {
+        $stock['quantity'] = inventory_quantity($id);
+    }
     return $stock;
+}
+
+function inventory_quantity($id) {
+    global $conn, $stock_master, $stock_moves;
+    $sum = 0;
+
+    $stmt = $conn->prepare("SELECT SUM(qty) FROM $stock_moves WHERE stock_id = ?");
+    $stmt->bind_param("s", $id);
+    $stmt->execute();
+    $stmt->bind_result($qty);
+    $stmt->fetch();
+    $sum += $qty;
+
+    return $sum;
 }

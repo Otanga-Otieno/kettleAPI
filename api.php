@@ -7,7 +7,7 @@ $uri = $_SERVER['REQUEST_URI'];
 $arr = array();
 
 //Inventory API
-if (preg_match("/^\\/api.php\\/inventory[\\/[0-9]*]?$/", $uri)) {
+if (preg_match("/^\\/api.php\\/inventory[\\/[A-Z0-9]*]?$/", $uri)) {
     $id = preg_replace("/^\\/api.php\\/inventory[\\/]?/", "", $uri);
     
     if (!$id) {
