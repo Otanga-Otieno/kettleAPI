@@ -11,19 +11,19 @@ $conn = new mysqli($dbconn['host'], $dbconn['dbuser'], $dbconn['dbpassword'], $d
 $item_codes = $tbpref."item_codes";
 $stock_master = $tbpref."stock_master";
 $stock_moves = $tbpref."stock_moves";
+$prices = $tbpref."prices";
 
 function inventory_all() {
     global $conn, $stock_master, $stock_moves;
 
-    $stmt = $conn->prepare("SELECT $stock_master.stock_id, $stock_master.description, $stock_master.material_cost FROM $stock_master");
+    $stmt = $conn->prepare("SELECT $stock_master.stock_id, $stock_master.description FROM $stock_master");
     $stmt->execute();
-    $stmt->bind_result($id, $des, $cost);
+    $stmt->bind_result($id, $des);
     $arr = array();
     while ($stmt->fetch()) {
         $stock = array();
         $stock['stock_id'] = $id;
         $stock['description'] = $des;
-        $stock['price'] = $cost;
         array_push($arr, $stock);
     }
     return $arr;
@@ -33,18 +33,18 @@ function inventory($id) {
     $id = preg_replace("/\\//", "", $id);
     global $conn, $stock_master, $stock_moves;
 
-    $stmt = $conn->prepare("SELECT $stock_master.description, $stock_master.material_cost FROM $stock_master WHERE $stock_master.stock_id = ? ");
+    $stmt = $conn->prepare("SELECT $stock_master.description FROM $stock_master WHERE $stock_master.stock_id = ? ");
     $stmt->bind_param("s", $id);
     $stmt->execute();
-    $stmt->bind_result($des, $cost);
+    $stmt->bind_result($des);
     $stock = array();
     while ($stmt->fetch()) {
         $stock['description'] = $des;
-        $stock['price'] = $cost;
     }
     $stmt->close();
     if ($stock) {
         $stock['quantity'] = inventory_quantity($id);
+        $stock['price'] = inventory_price($id);
     }
     return $stock;
 }
@@ -58,6 +58,21 @@ function inventory_quantity($id) {
     $stmt->execute();
     $stmt->bind_result($qty);
     $stmt->fetch();
+    $sum += $qty;
+
+    return $sum;
+}
+
+function inventory_price($id) {
+    global $conn, $prices;
+    $sum = 0;
+
+    $stmt = $conn->prepare("SELECT price FROM $prices WHERE stock_id = ?");
+    $stmt->bind_param("s", $id);
+    $stmt->execute();
+    $stmt->bind_result($qty);
+    $stmt->fetch();
+    $stmt->close();
     $sum += $qty;
 
     return $sum;
