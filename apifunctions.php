@@ -13,6 +13,7 @@ $stock_master = $tbpref."stock_master";
 $stock_moves = $tbpref."stock_moves";
 $stock_category = $tbpref."stock_category";
 $prices = $tbpref."prices";
+$tax_types = $tbpref."tax_types";
 
 function inventory_all() {
     global $conn, $stock_master, $stock_moves;
@@ -38,10 +39,10 @@ function inventory($id) {
     $id = preg_replace("/\\//", "", $id);
     global $conn, $stock_master, $stock_moves;
 
-    $stmt = $conn->prepare("SELECT description, bar_id, category_id FROM $stock_master WHERE $stock_master.stock_id = ? ");
+    $stmt = $conn->prepare("SELECT description, bar_id, category_id, tax_type_id FROM $stock_master WHERE $stock_master.stock_id = ? ");
     $stmt->bind_param("s", $id);
     $stmt->execute();
-    $stmt->bind_result($des, $bid, $cid);
+    $stmt->bind_result($des, $bid, $cid, $tid);
     $stock = array();
     while ($stmt->fetch()) {
         $stock['description'] = $des;
@@ -52,6 +53,7 @@ function inventory($id) {
         $stock['quantity'] = inventory_quantity($id);
         $stock['price'] = inventory_price($id);
         $stock['category'] = inventory_category($cid);
+        $stock['tax_rate'] = inventory_tax($tid)."%";
     }
     return $stock;
 }
@@ -94,7 +96,21 @@ function inventory_category($id) {
     $stmt->execute();
     $stmt->bind_result($category);
     $stmt->fetch();
-    //$stmt->close();
+    $stmt->close();
 
     return $category;
+}
+
+function inventory_tax($id) {
+    global $conn, $tax_types;
+    $tax = 0;
+
+    $stmt = $conn->prepare("SELECT rate FROM $tax_types WHERE id = ?");
+    $stmt->bind_param("s", $id);
+    $stmt->execute();
+    $stmt->bind_result($tax);
+    $stmt->fetch();
+    $stmt->close();
+
+    return $tax;
 }

@@ -28,7 +28,7 @@ if (preg_match("/^\\/api.php\\/inventory[\\/[A-Z0-9]*]?$/", $uri)) {
     echo nl2br("\n\n");
 
     echo nl2br("<h3>/api.php/inventory/{stock_id}</h3>");
-    echo nl2br("Return stock item details (description, bar_id, quantity, price, category)");
+    echo nl2br("Return stock item details (description, bar_id, quantity, price, category, tax_rate)");
 }
 
 
