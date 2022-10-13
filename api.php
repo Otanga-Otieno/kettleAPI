@@ -23,7 +23,7 @@ if (preg_match("/^\\/api.php\\/inventory[\\/[A-Z0-9]*]?$/", $uri)) {
     header('Content-Type: text/html; charset=utf-8');
     echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
     echo nl2br("<h3>/api.php/inventory</h3>");
-    echo nl2br("Return all inventory items (stock_id, description)");
+    echo nl2br("Return all inventory items (stock_id, bar_id, description, quantity, price, category, tax_rate)");
 
     echo nl2br("\n\n");
 

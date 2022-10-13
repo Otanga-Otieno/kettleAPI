@@ -18,21 +18,37 @@ $tax_types = $tbpref."tax_types";
 function inventory_all() {
     global $conn, $stock_master, $stock_moves;
 
-    $stmt = $conn->prepare("SELECT stock_id, description FROM $stock_master");
+    $stmt = $conn->prepare("SELECT stock_id, description, bar_id, category_id, tax_type_id FROM $stock_master");
     $stmt->execute();
-    $stmt->bind_result($id, $des);
+    $stmt->bind_result($id, $des, $bid, $cid, $tid);
     $arr = array();
+    $result = array();
+
     while ($stmt->fetch()) {
         $stock = array();
         $stock['stock_id'] = $id;
+        $stock['bar_id'] = $bid;
         $stock['description'] = $des;
-        //$stock['bar_id'] = $bid;
-        //$stock['category_id'] = $cid;
+        $stock['category_id'] = $cid;
+        $stock['tax_id'] = $tid;
         array_push($arr, $stock);
     }
     $stmt->close();
 
-    return $arr;
+    foreach($arr as $arritem) {
+        $id = $arritem['stock_id'];
+
+        $item['stock_id'] = $id;
+        $item['bar_id'] = $arritem['bar_id'];
+        $item['description'] = $arritem['description'];
+        $item['quantity'] = inventory_quantity($id);
+        $item['price'] = inventory_price($id);
+        $item['category'] = inventory_category($arritem['category_id']);
+        $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
+        array_push($result, $item);
+    }
+
+    return $result;
 }
 
 function inventory($id) {

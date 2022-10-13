@@ -1,7 +1,7 @@
 <?php
 
 echo nl2br("<h3>/api.php/inventory</h3>");
-echo nl2br("Return all inventory items (stock_id, description)");
+echo nl2br("Return all inventory items (stock_id, bar_id, description, quantity, price, category, tax_rate)");
 
 echo nl2br("\n\n");
 
