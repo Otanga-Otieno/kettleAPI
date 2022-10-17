@@ -44,7 +44,10 @@ function inventory_all() {
         $item['bar_id'] = $arritem['bar_id'];
         $item['description'] = $arritem['description'];
         $item['quantity'] = inventory_quantity($id);
-        $item['price'] = inventory_price($id);
+        if ($price = inventory_price($id)) {
+            $item['price_id'] = inventory_priceId($id);
+            $item['price'] = $price;
+        }
         $item['category'] = inventory_category($arritem['category_id']);
         $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
         array_push($result, $item);
@@ -103,6 +106,19 @@ function inventory_price($id) {
     $sum += $qty;
 
     return $sum;
+}
+
+function inventory_priceId($id) {
+    global $conn, $prices;
+
+    $stmt = $conn->prepare("SELECT id FROM $prices WHERE stock_id = ?");
+    $stmt->bind_param("s", $id);
+    $stmt->execute();
+    $stmt->bind_result($pid);
+    $stmt->fetch();
+    $stmt->close();
+
+    return $pid;
 }
 
 function inventory_category($id) {
