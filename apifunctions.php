@@ -14,6 +14,8 @@ $stock_moves = $tbpref."stock_moves";
 $stock_category = $tbpref."stock_category";
 $prices = $tbpref."prices";
 $tax_types = $tbpref."tax_types";
+$sales_orders = $tbpref."sales_orders";
+$sales_order_details = $tbpref."sales_order_details";
 
 function inventory_all() {
     global $conn, $stock_master, $stock_moves;
@@ -129,4 +131,27 @@ function inventory_tax($id) {
     $stmt->close();
 
     return $tax;
+}
+
+function invoice($item) {
+    global $conn, $sales_orders, $sales_order_details;
+    $order_no = $item->order_id;
+    $order_total = $item->total_amount;
+    $order_date = $item->sale_date;
+
+    $stmt = $conn->prepare("INSERT INTO $sales_orders(order_no, ord_date, total) VALUES(?, ?, ?)");
+    $stmt->bind_param("sss", $order_no, $order_date, $order_total);
+    if ($stmt->execute()) {
+        $stmt2 = $conn->prepare("INSERT INTO $sales_order_details(order_no) VALUES(?)");
+        $stmt2->bind_param("s", $order_no);
+        if ($stmt2->execute()) {
+            $stmt->close();
+            $stmt2->close();
+            return "Invoice posted successfully.";
+        }
+        $stmt->close();
+        return $stmt2->error;
+    } else {
+        return $stmt->error;
+    }
 }
