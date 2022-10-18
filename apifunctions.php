@@ -20,9 +20,9 @@ $sales_order_details = $tbpref."sales_order_details";
 function inventory_all() {
     global $conn, $stock_master, $stock_moves;
 
-    $stmt = $conn->prepare("SELECT stock_id, description, bar_id, category_id, tax_type_id FROM $stock_master");
+    $stmt = $conn->prepare("SELECT stock_id, description, bar_id, bar_code, category_id, tax_type_id FROM $stock_master");
     $stmt->execute();
-    $stmt->bind_result($id, $des, $bid, $cid, $tid);
+    $stmt->bind_result($id, $des, $bid, $bcode, $cid, $tid);
     $arr = array();
     $result = array();
 
@@ -30,6 +30,7 @@ function inventory_all() {
         $stock = array();
         $stock['stock_id'] = $id;
         $stock['bar_id'] = $bid;
+        $stock['bar_code'] = $bcode;
         $stock['description'] = $des;
         $stock['category_id'] = $cid;
         $stock['tax_id'] = $tid;
@@ -44,6 +45,7 @@ function inventory_all() {
 
         $item['stock_id'] = $id;
         $item['bar_id'] = $arritem['bar_id'];
+        $item['bar_code'] = $arritem['bar_code'];
         $item['description'] = $arritem['description'];
         $item['quantity'] = inventory_quantity($id);
         $item['price_id'] = inventory_priceId($id);
