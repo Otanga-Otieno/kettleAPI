@@ -81,6 +81,19 @@ function inventory($id) {
     return $stock;
 }
 
+function inventory_description($id) {
+    global $conn, $stock_master;
+
+    $stmt = $conn->prepare("SELECT description FROM $stock_master WHERE stock_id = ?");
+    $stmt->bind_param("s", $id);
+    $stmt->execute();
+    $stmt->bind_result($desc);
+    $stmt->fetch();
+    $stmt->close();
+
+    return $desc;
+}
+
 function inventory_quantity($id) {
     global $conn, $stock_master, $stock_moves;
     $sum = 0;
@@ -153,31 +166,27 @@ function inventory_tax($id) {
 
 function invoice($item) {
     global $conn, $sales_orders, $sales_order_details, $stock_moves;
-    $order_no = $item->order_id;
+    $order_no = nextOrder(); //$item->order_id;
     $order_total = $item->total_amount;
     $order_date = $item->sale_date;
     $items = $item->items;
 
-    $stmt = $conn->prepare("INSERT INTO $sales_orders(order_no, ord_date, total) VALUES(?, ?, ?)");
-    $stmt->bind_param("sss", $order_no, $order_date, $order_total);
-    if ($stmt->execute()) {
-        $stmt2 = $conn->prepare("INSERT INTO $sales_order_details(order_no) VALUES(?)");
-        $stmt2->bind_param("s", $order_no);
-        if ($stmt2->execute()) {
-            $stmt->close();
-            $stmt2->close();
-        } else {
-            return $stmt2->error;
-        }
-    } else {
-        return $stmt->error;
-    }
+    $debtor = 1;
+    $date = date('Y-m-d');
+    $deliverto = "Gatanga Road";
+    $loc = "DEF";
+
+    $stmt = $conn->prepare("INSERT INTO $sales_orders(order_no, ord_date, total, debtor_no, branch_code, delivery_address, from_stk_loc, delivery_date, reference, customer_ref) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssssssss", $order_no, $order_date, $order_total, $debtor, $debtor, $deliverto, $loc, $date, $order_no, $order_no);
+    $stmt->execute();
 
     foreach($items as $itm) {
         $id = $itm->stock_id;
         $qty = $itm->qty;
+        $dsc = inventory_description($id);
         $price = inventory_price($id);
         stockMovesInvoice($id, $order_no, $order_date, $price, $qty);
+        lineInvoice($order_no, $id, $dsc, $price, -$qty);
     }
 
     return "Invoice posted successfully.";
@@ -187,8 +196,32 @@ function invoice($item) {
 
 function stockMovesInvoice($stock_id, $order_no, $order_date, $price, $quantity) {
     global $conn, $stock_moves;
+
     $quantity *= -1;
-    $stmt2 = $conn->prepare("INSERT INTO $stock_moves(stock_id, trans_no, tran_date, price, qty) VALUES(?,?,?,?,?)");
-    $stmt2->bind_param("sssss", $stock_id, $order_no, $order_date, $price, $quantity);
+    $loc = "DEF";
+
+    $stmt2 = $conn->prepare("INSERT INTO $stock_moves(stock_id, trans_no, tran_date, price, qty, loc_code) VALUES(?,?,?,?,?,?)");
+    $stmt2->bind_param("ssssss", $stock_id, $order_no, $order_date, $price, $quantity, $loc);
     $stmt2->execute();
+}
+
+function lineInvoice($order_no, $stock_id, $stock_description, $price, $quantity) {
+    global $conn, $sales_order_details;
+
+    $quantity *= -1;
+
+    $stmt2 = $conn->prepare("INSERT INTO $sales_order_details(order_no, stk_code, description, unit_price, quantity) VALUES(?,?,?,?,?)");
+    $stmt2->bind_param("sssss", $order_no, $stock_id, $stock_description, $price, $quantity);
+    $stmt2->execute();
+}
+
+function nextOrder() {
+    global $conn, $sales_orders;
+
+    $stmt = $conn->prepare("SELECT order_no FROM $sales_orders ORDER BY order_no DESC LIMIT 1");
+    $stmt->execute();
+    $stmt->bind_result($result);
+    $stmt->fetch();
+    return $result + 1;
+
 }
