@@ -152,10 +152,11 @@ function inventory_tax($id) {
 }
 
 function invoice($item) {
-    global $conn, $sales_orders, $sales_order_details;
+    global $conn, $sales_orders, $sales_order_details, $stock_moves;
     $order_no = $item->order_id;
     $order_total = $item->total_amount;
     $order_date = $item->sale_date;
+    $items = $item->items;
 
     $stmt = $conn->prepare("INSERT INTO $sales_orders(order_no, ord_date, total) VALUES(?, ?, ?)");
     $stmt->bind_param("sss", $order_no, $order_date, $order_total);
@@ -165,11 +166,29 @@ function invoice($item) {
         if ($stmt2->execute()) {
             $stmt->close();
             $stmt2->close();
-            return "Invoice posted successfully.";
+        } else {
+            return $stmt2->error;
         }
-        $stmt->close();
-        return $stmt2->error;
     } else {
         return $stmt->error;
     }
+
+    foreach($items as $itm) {
+        $id = $itm->stock_id;
+        $qty = $itm->qty;
+        $price = inventory_price($id);
+        stockMovesInvoice($id, $order_no, $order_date, $price, $qty);
+    }
+
+    return "Invoice posted successfully.";
+
+}
+
+
+function stockMovesInvoice($stock_id, $order_no, $order_date, $price, $quantity) {
+    global $conn, $stock_moves;
+    $quantity *= -1;
+    $stmt2 = $conn->prepare("INSERT INTO $stock_moves(stock_id, trans_no, tran_date, price, qty) VALUES(?,?,?,?,?)");
+    $stmt2->bind_param("sssss", $stock_id, $order_no, $order_date, $price, $quantity);
+    $stmt2->execute();
 }
