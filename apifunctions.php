@@ -189,7 +189,7 @@ function invoice($item) {
         lineInvoice($order_no, $id, $dsc, $price, -$qty);
     }
 
-    return "Invoice posted successfully.";
+    return $order_no;
 
 }
 
