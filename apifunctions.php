@@ -48,7 +48,6 @@ function inventory_all() {
         if ($quantity > 0) {
             $whse = inventory_locations($id);
             foreach ($whse as $w) {
-                $item['warehouse'] = $w['loc_code'];
                 $item['stock_id'] = $id;
                 $item['bar_id'] = $arritem['bar_id'];
                 $item['bar_code'] = $arritem['bar_code'];
@@ -58,6 +57,7 @@ function inventory_all() {
                 $item['price'] = $price;
                 $item['category'] = inventory_category($arritem['category_id']);
                 $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
+                $item['warehouse'] = $w['loc_code'];
                 array_push($result, $item);
             }
         } else {
