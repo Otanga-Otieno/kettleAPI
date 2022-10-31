@@ -170,11 +170,11 @@ function invoice($item) {
     $order_total = $item->total_amount;
     $order_date = $item->sale_date;
     $items = $item->items;
+    $loc = $item->loc_code;
 
     $debtor = 1;
     $date = date('Y-m-d');
     $deliverto = "Gatanga Road";
-    $loc = "DEF";
 
     $stmt = $conn->prepare("INSERT INTO $sales_orders(order_no, ord_date, total, debtor_no, branch_code, delivery_address, from_stk_loc, delivery_date, reference, customer_ref) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("ssssssssss", $order_no, $order_date, $order_total, $debtor, $debtor, $deliverto, $loc, $date, $order_no, $order_no);
@@ -185,7 +185,7 @@ function invoice($item) {
         $qty = $itm->qty;
         $dsc = inventory_description($id);
         $price = inventory_price($id);
-        stockMovesInvoice($id, $order_no, $order_date, $price, $qty);
+        stockMovesInvoice($id, $order_no, $order_date, $price, $qty, $loc);
         lineInvoice($order_no, $id, $dsc, $price, -$qty);
     }
 
@@ -194,11 +194,10 @@ function invoice($item) {
 }
 
 
-function stockMovesInvoice($stock_id, $order_no, $order_date, $price, $quantity) {
+function stockMovesInvoice($stock_id, $order_no, $order_date, $price, $quantity, $loc) {
     global $conn, $stock_moves;
 
     $quantity *= -1;
-    $loc = "DEF";
 
     $stmt2 = $conn->prepare("INSERT INTO $stock_moves(stock_id, trans_no, tran_date, price, qty, loc_code) VALUES(?,?,?,?,?,?)");
     $stmt2->bind_param("ssssss", $stock_id, $order_no, $order_date, $price, $quantity, $loc);
