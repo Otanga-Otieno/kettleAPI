@@ -52,6 +52,7 @@ function inventory_all() {
         $item['price'] = $price;
         $item['category'] = inventory_category($arritem['category_id']);
         $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
+        $item['warehouse'] = inventory_locations($id);
         array_push($result, $item);
     }
 
@@ -163,6 +164,24 @@ function inventory_tax($id) {
 
     return $tax;
 }
+
+function inventory_locations($id) {
+    global $conn, $stock_moves;
+    $result = array();
+
+    $stmt = $conn->prepare("SELECT loc_code, SUM(qty) FROM $stock_moves WHERE stock_id = ? GROUP BY loc_code");
+    $stmt->bind_param("s", $id);
+    $stmt->execute();
+    $stmt->bind_result($loc, $qty);
+    while($stmt->fetch()) {
+        $arr['loc_code'] = $loc;
+        $arr['qty'] = $qty;
+        array_push($result, $arr);
+    }
+    return $result;
+}
+
+//print_r(inventory_locations("B023"));
 
 function invoice($item) {
     global $conn, $sales_orders, $sales_order_details, $stock_moves;
