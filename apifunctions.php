@@ -181,8 +181,6 @@ function inventory_locations($id) {
     return $result;
 }
 
-//print_r(inventory_locations("B023"));
-
 function invoice($item) {
     global $conn, $sales_orders, $sales_order_details, $stock_moves;
     $order_no = nextOrder(); //$item->order_id;
