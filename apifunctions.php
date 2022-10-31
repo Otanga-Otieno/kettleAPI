@@ -41,19 +41,39 @@ function inventory_all() {
     foreach($arr as $arritem) {
         $id = $arritem['stock_id'];
         $price = inventory_price($id);
+        $quantity = inventory_quantity($id);
+
         if ($price <= 0) continue;
 
-        $item['stock_id'] = $id;
-        $item['bar_id'] = $arritem['bar_id'];
-        $item['bar_code'] = $arritem['bar_code'];
-        $item['description'] = $arritem['description'];
-        $item['quantity'] = inventory_quantity($id);
-        $item['price_id'] = inventory_priceId($id);
-        $item['price'] = $price;
-        $item['category'] = inventory_category($arritem['category_id']);
-        $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
-        $item['warehouse'] = inventory_locations($id);
-        array_push($result, $item);
+        if ($quantity > 0) {
+            $whse = inventory_locations($id);
+            foreach ($whse as $w) {
+                $item['warehouse'] = $w['loc_code'];
+                $item['stock_id'] = $id;
+                $item['bar_id'] = $arritem['bar_id'];
+                $item['bar_code'] = $arritem['bar_code'];
+                $item['description'] = $arritem['description'];
+                $item['quantity'] = $w['qty'];
+                $item['price_id'] = inventory_priceId($id);
+                $item['price'] = $price;
+                $item['category'] = inventory_category($arritem['category_id']);
+                $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
+                array_push($result, $item);
+            }
+        } else {
+            $item['stock_id'] = $id;
+            $item['bar_id'] = $arritem['bar_id'];
+            $item['bar_code'] = $arritem['bar_code'];
+            $item['description'] = $arritem['description'];
+            $item['quantity'] = $quantity;
+            $item['price_id'] = inventory_priceId($id);
+            $item['price'] = $price;
+            $item['category'] = inventory_category($arritem['category_id']);
+            $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
+            $item['warehouse'] = array();//inventory_locations($id);
+            array_push($result, $item);
+        }
+
     }
 
     return $result;
