@@ -171,20 +171,21 @@ function invoice($item) {
     $order_date = $item->sale_date;
     $items = $item->items;
     $loc = $item->loc_code;
+    $type = $loc == "WHUB" ? 1 : 2;
 
     $debtor = 1;
     $date = date('Y-m-d');
     $deliverto = "Gatanga Road";
 
-    $stmt = $conn->prepare("INSERT INTO $sales_orders(order_no, ord_date, total, debtor_no, branch_code, delivery_address, from_stk_loc, delivery_date, reference, customer_ref) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssssssss", $order_no, $order_date, $order_total, $debtor, $debtor, $deliverto, $loc, $date, $order_no, $order_no);
+    $stmt = $conn->prepare("INSERT INTO $sales_orders(order_no, ord_date, total, debtor_no, branch_code, delivery_address, from_stk_loc, delivery_date, reference, customer_ref, type) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssssssss", $order_no, $order_date, $order_total, $debtor, $debtor, $deliverto, $loc, $date, $order_no, $order_no, $type);
     $stmt->execute();
 
     foreach($items as $itm) {
         $id = $itm->stock_id;
         $qty = $itm->qty;
         $dsc = inventory_description($id);
-        $price = inventory_price($id);
+        $price = $itm->unit_price;
         stockMovesInvoice($id, $order_no, $order_date, $price, $qty, $loc);
         lineInvoice($order_no, $id, $dsc, $price, -$qty);
     }
