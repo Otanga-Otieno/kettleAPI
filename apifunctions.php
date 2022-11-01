@@ -47,13 +47,17 @@ function inventory_all() {
 
         if ($quantity > 0) {
             $whse = inventory_locations($id);
+
             foreach ($whse as $w) {
+                $locCode = $w['loc_code'];
+                $price_id = $locCode == "WHUB" ? 1 : 3;
+                
                 $item['stock_id'] = $id;
                 $item['bar_id'] = $arritem['bar_id'];
                 $item['bar_code'] = $arritem['bar_code'];
                 $item['description'] = $arritem['description'];
                 $item['quantity'] = $w['qty'];
-                $item['price_id'] = inventory_priceId($id);
+                $item['price_id'] = $price_id;
                 $item['price'] = $price;
                 $item['category'] = inventory_category($arritem['category_id']);
                 $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
@@ -66,7 +70,7 @@ function inventory_all() {
             $item['bar_code'] = $arritem['bar_code'];
             $item['description'] = $arritem['description'];
             $item['quantity'] = $quantity;
-            $item['price_id'] = inventory_priceId($id);
+            $item['price_id'] = 3;
             $item['price'] = $price;
             $item['category'] = inventory_category($arritem['category_id']);
             $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
