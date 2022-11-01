@@ -70,7 +70,7 @@ function inventory_all() {
             $item['price'] = $price;
             $item['category'] = inventory_category($arritem['category_id']);
             $item['tax_rate'] = inventory_tax($arritem['tax_id'])."%";
-            $item['warehouse'] = array();//inventory_locations($id);
+            $item['warehouse'] = null;//inventory_locations($id);
             array_push($result, $item);
         }
 
